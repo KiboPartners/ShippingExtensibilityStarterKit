@@ -1,15 +1,24 @@
-import { ActionId, EstimateTaxContext, createArcFunction } from "./main";
-import { ThrirdPartyTaxableOrder, ThrirdPartyOrderTaxContext } from '@kibocommerce/rest-sdk/clients/PricingStorefront/models'
-import { spreadTotalsOntoLineItems } from "./utils";
+import { EstimateTaxContext } from "./main";
+import { ThrirdPartyOrderTaxContext } from '@kibocommerce/rest-sdk/clients/PricingStorefront/models'
+import { createBlankResponse, spreadTotalsOntoLineItems } from "./utils";
 
+/**
+ * Main entrance point to implement your tax logic
+ * 
+ * @param context API Extension Context
+ * @returns ThrirdPartyOrderTaxContext
+ */
 export const estimateTaxes = async (context: EstimateTaxContext): Promise<ThrirdPartyOrderTaxContext> => {
-  var resp = context.response.body
+  const request = context.request.body
+  let resp = createBlankResponse(context.request.body)
 
-  context.response.body.orderTax = (context.request.body.lineItems
+  /* Flat 10% tax */
+  resp.orderTax = (request.lineItems
     ?.map(l => l.lineItemPrice || 0)
     .reduce((partialSum: number, a) => partialSum + a, 0) || 0) * 0.1
 
-  resp = spreadTotalsOntoLineItems(context.request.body, resp)
+  resp = spreadTotalsOntoLineItems(request, resp)
+  
   return resp
 }
 

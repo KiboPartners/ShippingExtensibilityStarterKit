@@ -1,8 +1,5 @@
 import { ActionId } from "./main";
 
-import { ExternalPaymentWorkflowDefinition } from '@kibocommerce/rest-sdk/clients/Settings/models/ExternalPaymentWorkflowDefinition'
-import { credentials, WORKFLOW_NAME, WORKFLOW_DESCRIPTION } from "./credentialDefinition";
-
 const Client = require('mozu-node-sdk/client')
 
 export interface ArcJSConfig {
@@ -55,7 +52,7 @@ export const platformApplicationsInstallImplementation = async (context: any, ca
   try {
 
     // Payment after action
-    const ESTIMATE_TAXES_BEFORE_ACTION = ActionId[ActionId["commerce.catalog.storefront.tax.http.estimateTaxes.before"]]
+    const ESTIMATE_TAXES_BEFORE_ACTION = ActionId[ActionId["http.commerce.catalog.storefront.tax.estimateTaxes.before"]]
     const paymentAfterActionContext: any = {
       "customFunctions": [
         {
@@ -77,6 +74,7 @@ export const platformApplicationsInstallImplementation = async (context: any, ca
       estimateTaxesBeforeAction.contexts?.push(paymentAfterActionContext)
     }
 
+    console.log("arcConfig", JSON.stringify(arcConfig))
     // Now we are all done, update the Arc config
     await myClient.setArcConfig({}, { body: arcConfig })
   } catch (err) {

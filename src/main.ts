@@ -2,12 +2,13 @@
 import { platformApplicationsInstallImplementation } from "./platformInstall";
 import { estimateTaxes } from "./taxController";
 import { ThrirdPartyTaxableOrder, ThrirdPartyOrderTaxContext } from '@kibocommerce/rest-sdk/clients/PricingStorefront/models'
+import { validateTotalsMatch } from "./utils";
 
 /**
  * Modify this list if you need more actions
  */
 export enum ActionId {
-  "commerce.catalog.storefront.tax.http.estimateTaxes.before",
+  "http.commerce.catalog.storefront.tax.estimateTaxes.before",
   "embedded.platform.applications.install",
 }
 
@@ -18,9 +19,7 @@ export type EstimateTaxContext = {
   response: {
     body: ThrirdPartyOrderTaxContext,
   },
-  exec: {
-
-  }
+  exec: Record<string, never>
 }
 
 export interface ArcFunction {
@@ -42,11 +41,13 @@ export function createArcFunction(
 }
 
 const taxBeforeAction = createArcFunction(
-  ActionId["commerce.catalog.storefront.tax.http.estimateTaxes.before"],
+  ActionId["http.commerce.catalog.storefront.tax.estimateTaxes.before"],
   function (context: EstimateTaxContext, callback: (errorMessage?: string) => void) {
 
     try {
-      estimateTaxes(context).then(() => {
+      estimateTaxes(context).then((resp: ThrirdPartyOrderTaxContext) => {
+        validateTotalsMatch(resp)
+        context.response.body = resp
         callback();
       }).catch((err: any) => {
         console.error("Error executing estimateTaxes:", err)
@@ -56,7 +57,6 @@ const taxBeforeAction = createArcFunction(
       console.error("Error executing estimateTaxes:", err)
       callback(err)
     }
-
   }
 );
 
@@ -71,6 +71,6 @@ const platformApplicationsInstall = createArcFunction(
 );
 
 export default {
-  "commerce.catalog.storefront.tax.http.estimateTaxes.before": taxBeforeAction,
+  "http.commerce.catalog.storefront.tax.estimateTaxes.before": taxBeforeAction,
   "embedded.platform.applications.install": platformApplicationsInstall,
 }

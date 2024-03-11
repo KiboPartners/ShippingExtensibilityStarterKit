@@ -1,19 +1,9 @@
 {
   "exports": [
     {
-      "id": "embedded.commerce.payments.action.after",
+      "id": "http.commerce.catalog.storefront.tax.estimateTaxes.before",
       "virtualPath": "./dist/manifest.all.js",
-      "actionId": "embedded.commerce.payments.action.after"
-    },
-    {
-      "id": "embedded.commerce.payments.action.before",
-      "virtualPath": "./dist/manifest.all.js",
-      "actionId": "embedded.commerce.payments.action.before"
-    },
-    {
-      "id": "embedded.commerce.payments.action.performPaymentInteraction",
-      "virtualPath": "./dist/manifest.all.js",
-      "actionId": "embedded.commerce.payments.action.performPaymentInteraction"
+      "actionId": "http.commerce.catalog.storefront.tax.estimateTaxes.before"
     },
     {
       "id": "embedded.platform.applications.install",

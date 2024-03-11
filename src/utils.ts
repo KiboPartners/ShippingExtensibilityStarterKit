@@ -1,5 +1,22 @@
 import { ThrirdPartyTaxableOrder, ThrirdPartyOrderTaxContext } from '@kibocommerce/rest-sdk/clients/PricingStorefront/models'
 
+export const createBlankResponse = (taxRequest: ThrirdPartyTaxableOrder): ThrirdPartyOrderTaxContext => {
+  return {
+    itemTaxContexts: taxRequest.lineItems?.map(i => {
+      return {
+        id: i.id,
+        productCode: i.productCode,
+        tax: 0,
+        shippingTax: 0,
+        quantity: i.quantity
+      }
+    }),
+    orderTax: 0,
+    shippingTax: 0,
+    handlingFeeTax: 0,
+  }
+}
+
 /**
  * Wrapper function to make sure all currency rounded correctly. Anytime you do math on currency you need to wrap around this function. In JavaScript adding .1+.2 returns 0.30000000000000004, so you need to make sure you always return rounded values.
  * 
@@ -28,16 +45,6 @@ export const validateTotalsMatch = (taxResponse: ThrirdPartyOrderTaxContext) => 
   }
 }
 
-export const spread = (total: number, count: number): Array<number> => {
-  let results: Array<number> = []
-  const amountPerItem = Number((total / count).toFixed(2))
-  for (let i = 0; i < count; i++) {
-    // Take into account penny rounding, put the extra cent in the first payment
-    results.push(Number((i == 0 ? amountPerItem + (total - (amountPerItem * count)) : amountPerItem).toFixed(2)))
-  }
-  return results
-}
-
 /**
  * In case there are any floating point rounding issues, we need to fix before sending back to Kibo.
  * 
@@ -48,7 +55,7 @@ export const roundCurrencyValues = (taxResponse: ThrirdPartyOrderTaxContext): Th
   taxResponse.orderTax = safeToCurrency(taxResponse.orderTax)
   taxResponse.shippingTax = safeToCurrency(taxResponse.shippingTax)
   taxResponse.handlingFeeTax = safeToCurrency(taxResponse.handlingFeeTax)
-  for (let item of taxResponse.itemTaxContexts || []) {
+  for (const item of taxResponse.itemTaxContexts || []) {
     item.shippingTax = safeToCurrency(item.shippingTax)
     item.tax = safeToCurrency(item.tax)
   }
@@ -83,10 +90,10 @@ export const fixPennyRoundingOnLineItems = (taxResponse: ThrirdPartyOrderTaxCont
 export const spreadTotalsOntoLineItems = (taxRequest: ThrirdPartyTaxableOrder, taxResponse: ThrirdPartyOrderTaxContext): ThrirdPartyOrderTaxContext => {
   const total = taxRequest.lineItems?.map(l => l.lineItemPrice || 0)?.reduce((partialSum: number, a: number) => partialSum + a, 0) || 0
 
-  for (let item of taxResponse.itemTaxContexts || []) {
+  for (const item of taxResponse.itemTaxContexts || []) {
     const requestItem = taxRequest.lineItems?.find(l => l.id == item.id)
     if (requestItem) {
-      const impact = total / (requestItem.lineItemPrice || 0)
+      const impact = (requestItem.lineItemPrice || 0) / total
       item.tax = impact * (taxResponse.orderTax || 0)
       item.shippingTax = impact * (taxResponse.shippingTax || 0)
     }
