@@ -1,4 +1,4 @@
-import { ActionId } from "./arcTypes/index";
+import { ActionId } from "./main";
 
 import { ExternalPaymentWorkflowDefinition } from '@kibocommerce/rest-sdk/clients/Settings/models/ExternalPaymentWorkflowDefinition'
 import { credentials, WORKFLOW_NAME, WORKFLOW_DESCRIPTION } from "./credentialDefinition";
@@ -34,29 +34,9 @@ const myClientFactory = Client.sub({
     method: constants.verbs.PUT,
     url: '{+tenantPod}api/platform/extensions'
   }),
-  getThirdPartyWorkflow: Client.method({
-    method: constants.verbs.GET,
-    url: '{+tenantPod}api/commerce/settings/checkout/paymentsettings/thirdpartyworkflows/{fullyQualifiedName}'
-  }),
-  getThirdPartyWorkflows: Client.method({
-    method: constants.verbs.GET,
-    url: '{+tenantPod}api/commerce/settings/checkout/paymentsettings/thirdpartyworkflows'
-  }),
-  deleteThirdPartyWorkflow: Client.method({
-    method: constants.verbs.DELETE,
-    url: '{+tenantPod}api/commerce/settings/checkout/paymentsettings/thirdpartyworkflows/{fullyQualifiedName}'
-  }),
-  addThirdPartyWorkflow: Client.method({
-    method: constants.verbs.PUT,
-    url: '{+tenantPod}api/commerce/settings/checkout/paymentsettings/thirdpartyworkflows/'
-  }),
 }) as (context: any) => {
   getArcConfig: () => Promise<ArcJSConfig>,
   setArcConfig: (_: any, payload: { body: ArcJSConfig }) => any,
-  getThirdPartyWorkflows: () => Promise<Array<ExternalPaymentWorkflowDefinition>>,
-  getThirdPartyWorkflow: () => Promise<ExternalPaymentWorkflowDefinition>,
-  deleteThirdPartyWorkflow: (params: { fullyQualifiedName: string }) => Promise<null>,
-  addThirdPartyWorkflow: (_: any, payload: { body: ExternalPaymentWorkflowDefinition }) => any,
   context: any,
 };
 
@@ -74,99 +54,27 @@ export const platformApplicationsInstallImplementation = async (context: any, ca
 
   try {
 
-    for (const site of context.get.tenant().sites) {
-      myClient.context[constants.headers.SITE] = site.id;
-      const workflows = await myClient.getThirdPartyWorkflows()
-      const fqn = "tenant~" + WORKFLOW_NAME
-      const existingWorkflow = workflows.find(workflow => workflow.fullyQualifiedName == fqn)
-      if (existingWorkflow) {
-        // Replace the workflow if it has changed. These is no Update API
-        await myClient.deleteThirdPartyWorkflow({ fullyQualifiedName: fqn })
-      }
-
-      await myClient.addThirdPartyWorkflow({}, {
-        body: {
-          name: WORKFLOW_NAME,
-          namespace: "tenant",
-          description: WORKFLOW_DESCRIPTION,
-          fullyQualifiedName: fqn,
-          isEnabled: false,
-          isLegacy: true,
-          credentials: credentials
-        }
-      })
-      console.log("Workflow added")
-
-    }
-
-
     // Payment after action
-    const PAYMENT_AFTER_ACTION = ActionId[ActionId["embedded.commerce.payments.action.after"]]
+    const ESTIMATE_TAXES_BEFORE_ACTION = ActionId[ActionId["commerce.catalog.storefront.tax.http.estimateTaxes.before"]]
     const paymentAfterActionContext: any = {
       "customFunctions": [
         {
           applicationKey: context.apiContext.appKey,
-          functionId: PAYMENT_AFTER_ACTION,
+          functionId: ESTIMATE_TAXES_BEFORE_ACTION,
           enabled: true
         }
       ]
     }
-    const paymentAfterAction = arcConfig.actions?.find(a => a.actionId == PAYMENT_AFTER_ACTION)
-    if (!paymentAfterAction) {
+    const estimateTaxesBeforeAction = arcConfig.actions?.find(a => a.actionId == ESTIMATE_TAXES_BEFORE_ACTION)
+    if (!estimateTaxesBeforeAction) {
       arcConfig.actions?.push({
-        actionId: PAYMENT_AFTER_ACTION,
+        actionId: ESTIMATE_TAXES_BEFORE_ACTION,
         "contexts": [
           paymentAfterActionContext
         ]
       })
-    } else if (!paymentAfterAction.contexts?.some(c => c.customFunctions?.some(f => f.applicationKey == context.apiContext.appKey))) {
-      paymentAfterAction.contexts?.push(paymentAfterActionContext)
-    }
-
-    // Payment before action
-    const PAYMENT_BEFORE_ACTION = ActionId[ActionId["embedded.commerce.payments.action.before"]]
-    const paymentBeforeContext: any = {
-      "customFunctions": [
-        {
-          applicationKey: context.apiContext.appKey,
-          functionId: PAYMENT_BEFORE_ACTION,
-          enabled: true
-        }
-      ]
-    }
-    const paymentBeforeAction = arcConfig.actions?.find(a => a.actionId == PAYMENT_BEFORE_ACTION)
-    if (!paymentBeforeAction) {
-      arcConfig.actions?.push({
-        actionId: PAYMENT_BEFORE_ACTION,
-        "contexts": [
-          paymentBeforeContext
-        ]
-      })
-    } else if (!paymentBeforeAction.contexts?.some(c => c.customFunctions?.some(f => f.applicationKey == context.apiContext.appKey))) {
-      paymentBeforeAction.contexts?.push(paymentBeforeContext)
-    }
-
-    // Payment interaction action
-    const PERFORM_PAYMENT_INTERACTION_ACTION = ActionId[ActionId["embedded.commerce.payments.action.performPaymentInteraction"]]
-    const performPatyInteractionContext: any = {
-      "customFunctions": [
-        {
-          applicationKey: context.apiContext.appKey,
-          functionId: PERFORM_PAYMENT_INTERACTION_ACTION,
-          enabled: true
-        }
-      ]
-    }
-    const paymentInteractionAction = arcConfig.actions?.find(a => a.actionId == PERFORM_PAYMENT_INTERACTION_ACTION)
-    if (!paymentInteractionAction) {
-      arcConfig.actions?.push({
-        actionId: PERFORM_PAYMENT_INTERACTION_ACTION,
-        "contexts": [
-          performPatyInteractionContext
-        ]
-      })
-    } else if (!paymentInteractionAction.contexts?.some(c => c.customFunctions?.some(f => f.applicationKey == context.apiContext.appKey))) {
-      paymentInteractionAction.contexts?.push(performPatyInteractionContext)
+    } else if (!estimateTaxesBeforeAction.contexts?.some(c => c.customFunctions?.some(f => f.applicationKey == context.apiContext.appKey))) {
+      estimateTaxesBeforeAction.contexts?.push(paymentAfterActionContext)
     }
 
     // Now we are all done, update the Arc config
