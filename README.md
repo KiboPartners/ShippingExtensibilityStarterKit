@@ -12,6 +12,20 @@ You will need to first upload the code to a new application, modify the code to 
 
 First install the dependencies with: `npm install`
 
+Then create a mozu.config.json
+
+
+```json
+{
+  "baseUrl": "https://home.mozu.com",
+  "developerAccountId": 0,
+  "developerAccount": {
+    "emailAddress": "email@example.com"
+  },
+  "workingApplicationKey": "Namespace.AppKey.1.0.0.Release"
+}
+```
+
 Then build with `grunt`. It will run through eslint and Typescript checks, compile the code into the assets folder, and then upload to your application using mozusync as usual.
 
 Then go to your application in Dev Center, and click Install on your tenant. This will automaticaly add the API Extensions in the Action Management JSON Editor. You can then go to the Payment Types screen, add your credentials, enable, and then Save.
