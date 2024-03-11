@@ -12,7 +12,7 @@ You will need to first upload the code to a new application, modify the code to 
 
 First install the dependencies with: `npm install`
 
-Then create a mozu.config.json
+Then create a `mozu.config.json`
 
 
 ```json
