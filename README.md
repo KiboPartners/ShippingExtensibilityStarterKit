@@ -4,8 +4,7 @@ This is a starter kit for using adding a custom tax integration in Kibo.
 
 ## Getting Started
 
-The starter kit contains a basic tax implementation that adds a 10% flat tax. You can use this as a starting point to add your own tax implementation that either calls out to a tax service or adds custom VAT logic. See [Developer Tools]
-(https://docs.kibocommerce.com/help/developer-tools) in the Kibo documentation for information on getting started with applications.
+The starter kit contains a basic tax implementation that adds a 10% flat tax. You can use this as a starting point to add your own tax implementation that either calls out to a tax service or adds custom VAT logic. See [Developer Tools](https://docs.kibocommerce.com/help/developer-tools) in the Kibo documentation for information on getting started with applications.
 
 You will need to first upload the code to a new application, modify the code to your needs, install, and then test.
 

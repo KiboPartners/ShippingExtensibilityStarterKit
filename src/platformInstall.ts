@@ -74,7 +74,6 @@ export const platformApplicationsInstallImplementation = async (context: any, ca
       estimateTaxesBeforeAction.contexts?.push(paymentAfterActionContext)
     }
 
-    console.log("arcConfig", JSON.stringify(arcConfig))
     // Now we are all done, update the Arc config
     await myClient.setArcConfig({}, { body: arcConfig })
   } catch (err) {
