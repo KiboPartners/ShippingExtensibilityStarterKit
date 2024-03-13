@@ -1,6 +1,6 @@
-# Shipping Extensibility Test (Arc JS)
+# Shipping Extensibility Starter Kit
 
-A basic implementation of Shipping Extensibility using API Extensions (Arc JS).
+A basic implementation of Shipping Extensibility using API Extensions in TypeScript.
 
 Shipping Extensibility test application that provides sample rates and labels without any external 3rd-party dependencies.
 Rates and labels are fake and should only be used for basic validation purposes.
