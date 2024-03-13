@@ -1,9 +1,9 @@
 {
   "exports": [
     {
-      "id": "http.commerce.catalog.storefront.tax.estimateTaxes.before",
+      "id": "embedded.commerce.catalog.storefront.shipping.shippingExtensibility.main",
       "virtualPath": "./dist/manifest.all.js",
-      "actionId": "http.commerce.catalog.storefront.tax.estimateTaxes.before"
+      "actionId": "embedded.commerce.catalog.storefront.shipping.shippingExtensibility.main"
     },
     {
       "id": "embedded.platform.applications.install",

@@ -1,24 +1,26 @@
 
+import { RateRequest } from "@kibocommerce/rest-sdk/clients/ShippingStorefront";
 import { platformApplicationsInstallImplementation } from "./platformInstall";
-import { estimateTaxes } from "./taxController";
-import { ThrirdPartyTaxableOrder, ThrirdPartyOrderTaxContext } from '@kibocommerce/rest-sdk/clients/PricingStorefront/models'
-import { validateTotalsMatch } from "./utils";
+import { cancelLabels, getLabels, getManifest, getManifestUrl, getRates } from "./shippingController";
+import { CancelLabelRequest, ManifestRequest, ShipmentRequest } from "./types";
 
 /**
  * Modify this list if you need more actions
  */
 export enum ActionId {
-  "http.commerce.catalog.storefront.tax.estimateTaxes.before",
+  "embedded.commerce.catalog.storefront.shipping.shippingExtensibility.main",
   "embedded.platform.applications.install",
 }
 
-export type EstimateTaxContext = {
-  request: {
-    body: ThrirdPartyTaxableOrder,
+export type ShippingExtensibilityMainContext = {
+  get: {
+    request: () => {
+      context: any,
+      request: any
+    }
+    method: () => 'rates' | 'labels' | 'manifest' | 'manifest-url' | 'cancel-labels' 
   },
-  response: {
-    body: ThrirdPartyOrderTaxContext,
-  },
+  carrierId: string,
   exec: Record<string, never>
 }
 
@@ -26,7 +28,7 @@ export interface ArcFunction {
   actionName: string;
   customFunction: (
     context: any,
-    callback: (errorMessage?: string) => void
+    callback: (errorMessage?: string | null, resp?: any) => void
   ) => void;
 }
 
@@ -34,29 +36,55 @@ export function createArcFunction(
   actionName: ActionId,
   customFunction: (
     context: any,
-    callback: (errorMessage?: string) => void
+    callback: (errorMessage?: string | null, resp?: any) => void
   ) => void
 ): ArcFunction {
   return { actionName: ActionId[actionName], customFunction: customFunction };
 }
 
-const taxBeforeAction = createArcFunction(
-  ActionId["http.commerce.catalog.storefront.tax.estimateTaxes.before"],
-  function (context: EstimateTaxContext, callback: (errorMessage?: string) => void) {
+const shippingExtensibilityAction = createArcFunction(
+  ActionId["embedded.commerce.catalog.storefront.shipping.shippingExtensibility.main"],
+  function (context: ShippingExtensibilityMainContext, callback: (error: string | null, resp: any) => void) {
 
-    try {
-      estimateTaxes(context).then((resp: ThrirdPartyOrderTaxContext) => {
-        validateTotalsMatch(resp)
-        context.response.body = resp
-        callback();
-      }).catch((err: any) => {
-        console.error("Error executing estimateTaxes:", err)
-        callback(err)
-      })
-    } catch (err: any) {
-      console.error("Error executing estimateTaxes:", err)
-      callback(err)
-    }
+      const requestHolder = context.get.request();
+      const requestPayload = requestHolder.request
+      const requestContext = requestHolder.context
+
+      console.log('shippingExtensibilityAction2', context.get.method())
+      switch(context.get.method()) {
+        case 'rates':
+          getRates(requestContext, requestPayload as RateRequest).then((resp) => {
+            callback(null, resp)
+          })
+          break;
+        
+        case 'labels':
+          getLabels(requestContext, requestPayload as ShipmentRequest).then((resp) => {
+            callback(null, resp)
+          })
+          break;
+      
+        case 'manifest':
+          getManifest(requestContext, requestPayload as ManifestRequest).then((resp) => {
+            callback(null, resp)
+          })
+          break;
+      
+        case 'manifest-url':
+          getManifestUrl(requestContext, requestPayload as string).then((resp) => {
+            callback(null, resp)
+          })
+          break;
+      
+        case 'cancel-labels':
+          cancelLabels(requestContext, requestPayload as CancelLabelRequest).then((resp) => {
+            callback(null, resp)
+          })
+          break;
+      
+        default:
+          throw new Error('Invalid method provided');
+      }
   }
 );
 
@@ -71,6 +99,6 @@ const platformApplicationsInstall = createArcFunction(
 );
 
 export default {
-  "http.commerce.catalog.storefront.tax.estimateTaxes.before": taxBeforeAction,
+  "embedded.commerce.catalog.storefront.shipping.shippingExtensibility.main": shippingExtensibilityAction,
   "embedded.platform.applications.install": platformApplicationsInstall,
 }

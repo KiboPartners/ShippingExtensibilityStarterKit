@@ -52,26 +52,26 @@ export const platformApplicationsInstallImplementation = async (context: any, ca
   try {
 
     // Payment after action
-    const ESTIMATE_TAXES_BEFORE_ACTION = ActionId[ActionId["http.commerce.catalog.storefront.tax.estimateTaxes.before"]]
-    const paymentAfterActionContext: any = {
+    const SHIPPING_EXTENSIBILITY_MAIN_ACTION = ActionId[ActionId["embedded.commerce.catalog.storefront.shipping.shippingExtensibility.main"]]
+    const shippingExtensibilityContext: any = {
       "customFunctions": [
         {
           applicationKey: context.apiContext.appKey,
-          functionId: ESTIMATE_TAXES_BEFORE_ACTION,
+          functionId: SHIPPING_EXTENSIBILITY_MAIN_ACTION,
           enabled: true
         }
       ]
     }
-    const estimateTaxesBeforeAction = arcConfig.actions?.find(a => a.actionId == ESTIMATE_TAXES_BEFORE_ACTION)
-    if (!estimateTaxesBeforeAction) {
+    const shippingExtensibilityMainAction = arcConfig.actions?.find(a => a.actionId == SHIPPING_EXTENSIBILITY_MAIN_ACTION)
+    if (!shippingExtensibilityMainAction) {
       arcConfig.actions?.push({
-        actionId: ESTIMATE_TAXES_BEFORE_ACTION,
+        actionId: SHIPPING_EXTENSIBILITY_MAIN_ACTION,
         "contexts": [
-          paymentAfterActionContext
+          shippingExtensibilityContext
         ]
       })
-    } else if (!estimateTaxesBeforeAction.contexts?.some(c => c.customFunctions?.some(f => f.applicationKey == context.apiContext.appKey))) {
-      estimateTaxesBeforeAction.contexts?.push(paymentAfterActionContext)
+    } else if (!shippingExtensibilityMainAction.contexts?.some(c => c.customFunctions?.some(f => f.applicationKey == context.apiContext.appKey))) {
+      shippingExtensibilityMainAction.contexts?.push(shippingExtensibilityContext)
     }
 
     // Now we are all done, update the Arc config

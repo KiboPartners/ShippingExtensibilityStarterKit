@@ -1,38 +1,171 @@
-# Tax API Extensions Starter Kit
+# Shipping Extensibility Test (Arc JS)
 
-This is a starter kit for using adding a custom tax integration in Kibo.
+A basic implementation of Shipping Extensibility using API Extensions (Arc JS).
+
+Shipping Extensibility test application that provides sample rates and labels without any external 3rd-party dependencies.
+Rates and labels are fake and should only be used for basic validation purposes.
+
+## Requirements
+
+- Kibo Developer Account
+- Kibo API Extension Application
+- Node.js
+
+Note: This README assumes you are familiar with Kibo's API Extension framework.
+If you are not, please review the API Extensions guide found [here](https://docs.kibocommerce.com/help/getting-started-with-api-extensions).
 
 ## Getting Started
 
-The starter kit contains a basic tax implementation that adds a 10% flat tax. You can use this as a starting point to add your own tax implementation that either calls out to a tax service or adds custom VAT logic. See [Developer Tools](https://docs.kibocommerce.com/help/developer-tools) in the Kibo documentation for information on getting started with applications.
+1. Configure your Shipping Extensibility application in your Kibo Developer Center. See the [Configuration section](#configuration) for the standard payload used for this application.
 
-You will need to first upload the code to a new application, modify the code to your needs, install, and then test.
+2. Fork or Clone this repo.
 
-## Install
+3. Configure your mozu.config.json file. If updating an existing application use one of the pre-defined config files.
 
-First install the dependencies with: `npm install`
+    ```bash
+    # Copy the template file
+    cp mozu.config-template.json ./mozu.config.json
+    ```
 
-Then create a `mozu.config.json`
+4. Install Dependencies
 
+    ```bash
+    npm install
+    ```
 
-```json
+6. Deploy the application
+
+    ```bash
+    grunt
+    ```
+
+## Deployments
+
+Application is deployed to environments as ShippingExtensibilityTest. It can be found under the standard Mozu Integrations account along with other integration apps.
+
+See the pre-defined config files for exact developer account IDs and application IDs.
+
+## Configuration
+
+The Shipping Adapter payload for configuring the application is below:
+
+```
 {
-  "baseUrl": "https://home.mozu.com",
-  "developerAccountId": 0,
-  "developerAccount": {
-    "emailAddress": "email@example.com"
-  },
-  "workingApplicationKey": "Namespace.AppKey.1.0.0.Release"
+    "definition": {
+        "description": "Test Extensible Carrier",
+        "logoUrl": "https://i.ytimg.com/vi/bylC_0gumkk/maxresdefault.jpg",
+        "configFields": [
+            {
+                "name": "apiusername",
+                "dataType": "string",
+                "required": true,
+                "localizations": [
+                    {
+                        "localeCode": "en-US",
+                        "label": "API Username",
+                        "description": "API username"
+                    }
+                ]
+            },
+            {
+                "name": "apipassword",
+                "dataType": "password",
+                "required": true,
+                "localizations": [
+                    {
+                        "localeCode": "en-US",
+                        "label": "API Password",
+                        "description": "API password"
+                    }
+                ]
+            },
+            {
+                "name": "testinteger",
+                "dataType": "Integer",
+                "required": false,
+                "localizations": [
+                    {
+                        "localeCode": "en-US",
+                        "label": "Test Integer",
+                        "description": "Test integer"
+                    }
+                ]
+            },
+            {
+                "name": "likecake",
+                "dataType": "Boolean",
+                "required": true,
+                "localizations": [
+                    {
+                        "localeCode": "en-US",
+                        "label": "Do you like cake?",
+                        "description": "The cake is not a lie?"
+                    }
+                ]
+            }
+        ]
+    },
+    "serviceTypes": [
+        {
+            "serviceTypeCodeSuffix": "Standard",
+            "deliveryDuration": "Standard",
+            "localizations": [
+                {
+                    "localeCode": "en-US",
+                    "name": "Ship Ext Test Standard"
+                }
+            ]
+        },
+        {
+            "serviceTypeCodeSuffix": "3_Day",
+            "deliveryDuration": "ThreeDay",
+            "localizations": [
+                {
+                    "localeCode": "en-US",
+                    "name": "Ship Ext Test 3 Day"
+                }
+            ]
+        },
+        {
+            "serviceTypeCodeSuffix": "2_Day",
+            "deliveryDuration": "TwoDay",
+            "localizations": [
+                {
+                    "localeCode": "en-US",
+                    "name": "Ship Ext Test 2 Day"
+                }
+            ]
+        },
+        {
+            "serviceTypeCodeSuffix": "1_Day",
+            "deliveryDuration": "OneDay",
+            "localizations": [
+                {
+                    "localeCode": "en-US",
+                    "name": "Ship Ext Test 1 Day"
+                }
+            ]
+        }
+    ]
 }
 ```
 
-Then build with `grunt`. It will run through eslint and Typescript checks, compile the code into the assets folder, and then upload to your application using mozusync as usual.
+## Behavior
 
-Then go to your application in Dev Center, and click Install on your tenant. This will automaticaly add the API Extensions in the Action Management JSON Editor. You can then go to the Payment Types screen, add your credentials, enable, and then Save.
+This application is designed to return mostly-hardcoded responses to all Shipping Extensibility methods. It does not integrate with any external service.
 
-## Development
+Supported methods:
+* rates
+* labels
+* manifest
+* manifest-url
+* cancel-labels
 
-First, go to `src/taxController.ts` and you can modify the base implementation from there. Note the helper functions in `src/utils.ts` which you can use to distribute totals onto line items and fix rounding issues.
+### Rates
 
-Then, create a new order in the Kibo Admin interface and add some items. You will see tax in the order line items. Then you can use the API, e.g. GET `{{baseUrl}}/commerce/orders/16ef50de03bcc000010abb6e00009af4`, to verify that the `itemTaxTotal` and `shippingTaxTotal` looks correct.
+When requesting rates a hardcoded list of rates will be returned for each supported shipping method regardless of the shipping addresses. The rates will not change.
+
+### Labels
+
+When requesting labels this application will return a hardcoded tracking number and image for both shipment and return labels (one for each). The requested addresses do not matter and the same image is always returned.
 
